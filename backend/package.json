@@ -3,8 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon ./src/index.ts",
-    "dist": "node ./dist/index.js"
+    "start:dev": "nodemon ./src/index.ts",
+    "dist": "tsc",
+    "build": "tsx ./src/index.ts",
+    "start": "node ./dist/index.js",
+    "typeorm": "typeorm",
+    "typeorm:generate": "typeorm migration:generate",
+    "migration:run": "typeorm migration:run",
+    "typeorm:revert": "typeorm migration:revert"
   },
   "keywords": [],
   "author": "",
@@ -13,11 +19,20 @@
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.7",
+    "@types/pg": "^8.11.10",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.3"
   },
   "dependencies": {
-    "express": "^4.21.2"
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "pg": "^8.13.1",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.20",
+    "uuid": "^11.0.5"
   }
 }
