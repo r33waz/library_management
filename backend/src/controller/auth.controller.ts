@@ -5,10 +5,10 @@ const AuthController = {
   // Login handler
   login: async (req: Request, res: Response): Promise<void> => {
     try {
-      const result = await authService.loginService(req.body);
+      const result = await authService.loginService(req.body, res);
       res.status(result?.status || 200).json({
+        status: result?.status,
         message: result?.message,
-        email: result?.email,
       });
     } catch (error) {
       console.error(error);
@@ -19,10 +19,10 @@ const AuthController = {
   // Signup handler
   signup: async (req: Request, res: Response): Promise<void> => {
     try {
-      const result = await authService.signUpSErvice(req.body);
+      const result = await authService.signUpService(req.body);
       res.status(result?.status || 200).json({
+        status: result?.status,
         message: result?.message,
-        email: result?.email,
       });
     } catch (error) {
       console.error(error);
@@ -50,8 +50,11 @@ const AuthController = {
 
   // Logout handler
   logout: async (req: Request, res: Response): Promise<void> => {
-    const { email } = req.body;
-    res.send(`Logout logic here for email: ${email}`);
+    const result = await authService.logoutService(res);
+    res.status(result?.status || 200).json({
+      status: result?.status,
+      message: result?.message,
+    });
   },
 
   // Refresh Token handler

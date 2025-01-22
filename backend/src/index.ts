@@ -1,3 +1,4 @@
+import cookieParser from "cookie-parser";
 import "dotenv/config";
 import express from "express";
 import AppDataSource from "./config/db.config";
@@ -6,6 +7,8 @@ import mainRouter from "./routes/mainRoute";
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(cookieParser());
 
 app.use(mainRouter);
 

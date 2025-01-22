@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty } from "class-validator";
+import { IsEmail, IsInt, IsNotEmpty } from "class-validator";
 
 class LoginDto {
   @IsEmail()
@@ -16,19 +16,16 @@ class SignupDto {
   email: string;
 
   @IsNotEmpty()
-  @IsNotEmpty()
   password: string;
 
-  @IsNotEmpty()
   @IsNotEmpty()
   fullname: string;
 
   @IsNotEmpty()
-  @IsNotEmpty()
   universityCard: string;
 
   @IsNotEmpty()
-  @IsNotEmpty()
+  @IsInt()
   universityId: number;
 }
 
