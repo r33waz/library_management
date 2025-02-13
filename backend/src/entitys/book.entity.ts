@@ -3,6 +3,7 @@ import { BaseEntity } from "./base.entity";
 
 @Entity("book")
 export class Book extends BaseEntity {
+export class Book extends BaseEntity {
   @Column()
   title: string;
 
