@@ -1,16 +1,9 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { Column, Entity } from "typeorm";
+import BaseEntity from "../constant/base.entity";
 import { ROLES, SignupStatus } from "../constant/enum";
 
-@Entity()
-export class Profile {
-  @PrimaryGeneratedColumn("uuid")
-  id: string;
-
+@Entity("profile")
+export class Profile extends BaseEntity {
   @Column()
   fullname: string;
 
@@ -25,12 +18,6 @@ export class Profile {
 
   @Column({ type: "enum", enum: ROLES, default: ROLES.USER })
   role: ROLES;
-
-  @Column({ name: "last_activity_date", type: "date" })
-  lastActivityDate: Date = new Date();
-
-  @CreateDateColumn({ name: "created_at", type: "timestamp" })
-  createdAt: Date = new Date();
 }
 
 export default Profile;

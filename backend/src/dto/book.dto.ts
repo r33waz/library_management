@@ -42,3 +42,5 @@ class BookDto {
   summary: string;
   createdAt: Date = new Date();
 }
+
+export default BookDto;
