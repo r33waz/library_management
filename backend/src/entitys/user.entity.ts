@@ -1,15 +1,9 @@
-import { Column, CreateDateColumn, Entity } from "typeorm";
-import { v4 as uuidv4 } from "uuid";
+import { Column, Entity } from "typeorm";
 import { ROLES, SignupStatus } from "../constant/enum";
-
-const passwordRegex =
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+import { BaseEntity } from "./base.entity";
 
 @Entity()
-export class User {
-  @Column({ primary: true, type: "uuid" })
-  id: string = uuidv4();
-
+export class User extends BaseEntity {
   @Column()
   fullname: string;
 
@@ -33,9 +27,6 @@ export class User {
 
   @Column({ name: "last_activity_date", type: "date" })
   lastActivityDate: Date = new Date();
-
-  @CreateDateColumn({ name: "created_at", type: "timestamp" })
-  createdAt: Date = new Date();
 }
 
 export default User;

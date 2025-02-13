@@ -1,11 +1,8 @@
 import { Column, Entity } from "typeorm";
-import { v4 as uuidv4 } from "uuid";
+import { BaseEntity } from "./base.entity";
 
 @Entity("book")
-export class Book {
-  @Column({ primary: true, type: "uuid" })
-  id: string = uuidv4();
-
+export class Book extends BaseEntity {
   @Column()
   title: string;
 
