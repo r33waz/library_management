@@ -1,5 +1,6 @@
-import { Column, Entity } from "typeorm";
+import { Column, Entity, OneToMany } from "typeorm";
 import { BaseEntity } from "./base.entity";
+import Media from "./media.entity";
 
 @Entity("book")
 export class Book extends BaseEntity {
@@ -35,6 +36,9 @@ export class Book extends BaseEntity {
 
   @Column()
   summary: string;
+
+  @OneToMany(() => Media, (media) => media.book)
+  media: Media[];
 }
 
 export default Book;

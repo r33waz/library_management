@@ -19,7 +19,7 @@ const AuthController = {
   // Signup handler
   signup: async (req: Request, res: Response): Promise<void> => {
     try {
-      const result = await authService.signUpService(req.body);
+      const result = await authService.signUpService(req);
       res.status(result?.status || 200).json({
         status: result?.status,
         message: result?.message,

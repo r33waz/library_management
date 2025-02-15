@@ -1,13 +1,16 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 import AppDataSource from "../config/db.config";
 import { STATUS_CODE } from "../constant/enum";
+import Media from "../entitys/media.entity";
 import Profile from "../entitys/profile.entity";
 import User from "../entitys/user.entity";
 import { comparePassword, hashPassword } from "../helper/passwordHelper";
-import { ILogin, ISignup } from "../interface/auth.Interface";
+import { ILogin } from "../interface/auth.Interface";
+import { uploadResult } from "../middleware/multer";
 
 const userRepository = AppDataSource.getRepository(User);
 const profileRepository = AppDataSource.getRepository(Profile);
+const mediaRepository = AppDataSource.getRepository(Media);
 
 // authService.ts
 const AuthService = {
@@ -67,10 +70,9 @@ const AuthService = {
     };
   },
 
-  signUpService: async (body: ISignup) => {
-    const { fullname, email, password, universityCard, universityId } = body;
+  signUpService: async (req: Request) => {
+    const { fullname, email, password, universityId } = req?.body;
 
-    // Validate required fields
     if (!fullname)
       return {
         status: STATUS_CODE.BAD_REQUEST,
@@ -82,16 +84,6 @@ const AuthService = {
       return {
         status: STATUS_CODE.BAD_REQUEST,
         message: "Password is required",
-      };
-    if (!universityCard)
-      return {
-        status: STATUS_CODE.BAD_REQUEST,
-        message: "University Card is required",
-      };
-    if (!universityId)
-      return {
-        status: STATUS_CODE.BAD_REQUEST,
-        message: "University ID is required",
       };
 
     try {
@@ -113,10 +105,32 @@ const AuthService = {
 
       const hashedPassword = await hashPassword(password);
 
+      const files = req?.files as Express.Multer.File[];
+
+      let universityCardMediaId: string | null = null;
+
+      if (files.length > 0) {
+        const file = files[0];
+        console.log("Uploading university card:", file);
+        const uploadMedia = await uploadResult(file);
+
+        if (uploadMedia) {
+          const media = new Media();
+          media.path = uploadMedia.url;
+          media.type = uploadMedia.type;
+          media.name = uploadMedia.name;
+
+          const savedMedia = await mediaRepository.save(media);
+          universityCardMediaId = savedMedia.id;
+        }
+      }
+
       const profile = new Profile();
       profile.fullname = fullname;
-      profile.universityCard = universityCard;
       profile.universityId = universityId;
+      if (universityCardMediaId) {
+        profile.universityCard = universityCardMediaId;
+      }
 
       const newUser = new User();
       newUser.email = email;
@@ -133,6 +147,7 @@ const AuthService = {
         message: "User registered successfully",
       };
     } catch (error) {
+      console.error("Error in signUpService:", error);
       return {
         status: STATUS_CODE.INTERNAL_SERVER_ERROR,
         message: "Error creating user",

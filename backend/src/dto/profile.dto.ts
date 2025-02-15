@@ -1,4 +1,11 @@
-import { IsDate, IsEnum, IsInt, IsNotEmpty, IsUUID } from "class-validator";
+import {
+  IsDate,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsUUID,
+} from "class-validator";
 import { ROLES, SignupStatus } from "../constant/enum";
 
 class ProfileDto {
@@ -9,11 +16,11 @@ class ProfileDto {
   @IsNotEmpty()
   fullname: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsInt()
   universityId: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   universityCard: string;
 
   @IsNotEmpty()

@@ -5,8 +5,10 @@ export enum SignupStatus {
 }
 
 export enum ROLES {
+  SUDO_ADMIN = "SUDO_ADMIN",
   ADMIN = "ADMIN",
   USER = "USER",
+  STUDENT = "STUDENT",
 }
 
 export enum BORROWER_STATUS {
