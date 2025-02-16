@@ -85,6 +85,11 @@ const AuthService = {
         status: STATUS_CODE.BAD_REQUEST,
         message: "Password is required",
       };
+    if (!universityId)
+      return {
+        status: STATUS_CODE.BAD_REQUEST,
+        message: "University ID is required",
+      };
 
     try {
       const existingUser = await userRepository.findOneBy({ email });
@@ -94,10 +99,10 @@ const AuthService = {
           message: "User already exists",
         };
 
-      const existingUniversityId = await profileRepository.findOneBy({
+      const existingProfile = await profileRepository.findOneBy({
         universityId,
       });
-      if (existingUniversityId)
+      if (existingProfile)
         return {
           status: STATUS_CODE.BAD_REQUEST,
           message: "University ID already exists",
@@ -105,40 +110,45 @@ const AuthService = {
 
       const hashedPassword = await hashPassword(password);
 
+      let universityCardMediaId: string | null = null;
       const files = req?.files as Express.Multer.File[];
 
-      let universityCardMediaId: string | null = null;
-
-      if (files.length > 0) {
-        const file = files[0];
-        console.log("Uploading university card:", file);
-        const uploadMedia = await uploadResult(file);
-
-        if (uploadMedia) {
-          const media = new Media();
-          media.path = uploadMedia.url;
-          media.type = uploadMedia.type;
-          media.name = uploadMedia.name;
-
-          const savedMedia = await mediaRepository.save(media);
-          universityCardMediaId = savedMedia.id;
-        }
-      }
-
-      const profile = new Profile();
-      profile.fullname = fullname;
-      profile.universityId = universityId;
-      if (universityCardMediaId) {
-        profile.universityCard = universityCardMediaId;
-      }
-
-      const newUser = new User();
-      newUser.email = email;
-      newUser.password = hashedPassword;
-      newUser.profile = profile;
-
+      // Start transaction
       await AppDataSource.transaction(async (transactionalEntityManager) => {
+        // Step 1: Create Profile first
+        const profile = new Profile();
+        profile.fullname = fullname;
+        profile.universityId = universityId;
         await transactionalEntityManager.save(profile);
+
+        // Step 2: Upload university card if available
+        if (files?.length > 0) {
+          const file = files[0];
+          console.log("Uploading university card:", file);
+          const uploadMedia = await uploadResult(file);
+
+          if (uploadMedia) {
+            const media = new Media();
+            media.path = uploadMedia.url;
+            media.type = uploadMedia.type;
+            media.name = uploadMedia.name;
+            media.profile = profile; // Link media to profile
+
+            const savedMedia = await transactionalEntityManager.save(media);
+            universityCardMediaId = savedMedia.id;
+
+            // Step 3: Associate university card with profile
+            profile.universityCard = universityCardMediaId;
+            await transactionalEntityManager.save(profile);
+          }
+        }
+
+        // Step 4: Create User and link Profile (via profile_id)
+        const newUser = new User();
+        newUser.email = email;
+        newUser.password = hashedPassword;
+        newUser.profile = profile; // Assign profile to user
+
         await transactionalEntityManager.save(newUser);
       });
 
