@@ -6,7 +6,7 @@ import Profile from "../entitys/profile.entity";
 import User from "../entitys/user.entity";
 import { comparePassword, hashPassword } from "../helper/passwordHelper";
 import { ILogin } from "../interface/auth.Interface";
-import { uploadResult } from "../middleware/multer";
+import MediaService from "./media.service";
 
 const userRepository = AppDataSource.getRepository(User);
 const profileRepository = AppDataSource.getRepository(Profile);
@@ -125,7 +125,7 @@ const AuthService = {
         if (files?.length > 0) {
           const file = files[0];
           console.log("Uploading university card:", file);
-          const uploadMedia = await uploadResult(file);
+          const uploadMedia = await MediaService.uploadMedia(file);
 
           if (uploadMedia) {
             const media = new Media();

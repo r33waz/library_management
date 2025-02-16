@@ -1,34 +1,41 @@
-import { Response } from "express";
-import { STATUS_CODE } from "../constant/enum";
 import { uploadResult } from "../middleware/multer";
 
 const MediaService = {
-  uploadMedia: async (file: any, res: Response) => {
+  // Single file upload
+  uploadMedia: async (file: any) => {
     if (!file) {
-      // Check if file exists
-      return res.status(STATUS_CODE.BAD_REQUEST).json({
-        status: STATUS_CODE.BAD_REQUEST,
-        message: "No file uploaded",
-      });
+      throw new Error("No file uploaded.");
     }
+
     try {
-      // Call Cloudinary upload function
+      // Upload file to Cloudinary
       const uploadedData = await uploadResult(file);
-      return res.status(STATUS_CODE.SUCCESS).json({
-        status: STATUS_CODE.SUCCESS,
-        message: "File uploaded successfully",
-        data: uploadedData,
-      });
+      return uploadedData; // Return upload data (URL, type, etc.)
     } catch (error) {
       console.error("Error in media upload:", error);
-      return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({
-        status: STATUS_CODE.INTERNAL_SERVER_ERROR,
-        message: "Error uploading file",
-      });
+      throw new Error("Error uploading file to Cloudinary.");
     }
   },
 
-  uploadMultipleMedia: async (files: any[], res: Response) => {},
+  // Multiple file upload
+  uploadMultipleMedia: async (files: any[]) => {
+    if (!files || files.length === 0) {
+      throw new Error("No files to upload.");
+    }
+
+    try {
+      // Process each file and upload to Cloudinary
+      const uploadPromises = files.map((file) => uploadResult(file));
+
+      // Wait for all uploads to finish
+      const uploadedFiles = await Promise.all(uploadPromises);
+
+      return uploadedFiles; // Return uploaded file data
+    } catch (error) {
+      console.error("Error in multiple media upload:", error);
+      throw new Error("Error uploading multiple files.");
+    }
+  },
 };
 
 export default MediaService;
