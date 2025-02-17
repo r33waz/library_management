@@ -6,7 +6,7 @@ const AuthController = {
   login: async (req: Request, res: Response): Promise<void> => {
     try {
       const result = await authService.loginService(req.body, res);
-      res.status(result?.status || 200).json({
+      res.status(result?.status).json({
         status: result?.status,
         message: result?.message,
       });
@@ -65,8 +65,11 @@ const AuthController = {
 
   // Get User Info handler
   me: async (req: Request, res: Response): Promise<void> => {
-    const { email } = req.body;
-    res.send(`User info logic here for email: ${email}`);
+    const result = await authService.me(req, res);
+    res.status(result?.status || 200).json({
+      status: result?.status,
+      data: result?.data,
+    });
   },
 };
 

@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
 import BaseEntity from "../constant/base.entity";
+import { MEDIA_TYPE } from "../constant/enum";
 import Book from "./book.entity";
 import Profile from "./profile.entity";
 
@@ -14,13 +15,22 @@ export class Media extends BaseEntity {
   @Column()
   path: string;
 
+  @Column({ type: "enum", enum: MEDIA_TYPE, default: null })
+  mediaType: string;
+
   @ManyToOne(() => Book, (book) => book.media, { onDelete: "CASCADE" })
   @JoinColumn({ name: "bookId" })
   book: Book;
 
-  @ManyToOne(() => Profile, (profile) => profile.media, { onDelete: "CASCADE" })
+  @OneToOne(() => Profile, (profile) => profile.profilepic, {
+    onDelete: "CASCADE",
+  })
   @JoinColumn({ name: "profileId" })
-  profile: Profile;
+  profilepic: Profile;
+
+  @OneToOne(() => Profile, (profile) => profile.universityCard)
+  @JoinColumn({ name: "universityCardId" })
+  universityCard: Profile;
 }
 
 export default Media;

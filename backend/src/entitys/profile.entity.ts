@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany } from "typeorm";
+import { Column, Entity, JoinColumn, OneToOne } from "typeorm";
 import BaseEntity from "../constant/base.entity";
 import { ROLES, SignupStatus } from "../constant/enum";
 import Media from "./media.entity";
@@ -11,8 +11,13 @@ export class Profile extends BaseEntity {
   @Column({ name: "university_id", unique: true, default: null })
   universityId: number;
 
-  @Column({ name: "university_card", type: "text", default: null })
-  universityCard: string;
+  @OneToOne(() => Media, (media) => media.universityCard, { cascade: true })
+  @JoinColumn({ name: "universityCardId" })
+  universityCard: Media;
+
+  @OneToOne(() => Media, (media) => media?.profilepic, { nullable: true })
+  @JoinColumn({ name: "profileId" })
+  profilepic: Media;
 
   @Column({
     name: "status",
@@ -24,9 +29,6 @@ export class Profile extends BaseEntity {
 
   @Column({ name: "role", type: "enum", enum: ROLES, default: ROLES.USER })
   role: ROLES;
-
-  @OneToMany(() => Media, (media) => media.profile, { cascade: true })
-  media: Media[];
 }
 
 export default Profile;
