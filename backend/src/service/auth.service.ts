@@ -9,7 +9,6 @@ import { genAccessToken, genRefreshToken } from "../helper/genToken";
 import { comparePassword, hashPassword } from "../helper/passwordHelper";
 import { ILogin } from "../interface/auth.Interface";
 import { AuthenticatedRequest } from "../middleware/auth.middleware";
-import MediaService from "./media.service";
 
 const userRepository = AppDataSource.getRepository(User);
 const profileRepository = AppDataSource.getRepository(Profile);
@@ -77,7 +76,7 @@ const AuthService = {
   },
 
   signUpService: async (req: Request) => {
-    const { fullname, email, password, universityId, mediaType } = req?.body;
+    const { fullname, email, password, universityId, media } = req?.body;
 
     if (!fullname)
       return {
@@ -115,9 +114,6 @@ const AuthService = {
         };
 
       const hashedPassword = await hashPassword(password);
-      let uploadedMediaUrl: string | null = null;
-      let uploadedMediaPublicId: string | null = null;
-      const files = req?.files as Express.Multer.File[];
 
       await AppDataSource.transaction(async (transactionalEntityManager) => {
         const profile = new Profile();
@@ -125,37 +121,17 @@ const AuthService = {
         profile.universityId = universityId;
         await transactionalEntityManager.save(profile);
 
-        if (files?.length > 0) {
-          const file = files[0];
-          const uploadMedia = await MediaService.uploadMedia(file);
-
-          if (uploadMedia) {
-            uploadedMediaUrl = uploadMedia?.url;
-            uploadedMediaPublicId = uploadMedia.public_id; // Save the public ID for deletion
-
-            const media = new Media();
-            media.path = uploadMedia.url;
-            media.type = uploadMedia.type;
-            media.name = uploadMedia.name;
-            media.mediaType = mediaType;
-
-            const savedMedia = await transactionalEntityManager.save(media);
-            console.log(
-              "🚀 ~ awaitAppDataSource.transaction ~ savedMedia:",
-              savedMedia
-            );
-            if (mediaType === MEDIA_TYPE.UNIVERSITY_CARD) {
-              profile.universityCard = savedMedia;
-            }
-            if (mediaType === MEDIA_TYPE.PROFILE) {
-              profile.profilepic = savedMedia;
-            }
-            await transactionalEntityManager.save(profile);
-            // profile.universityCard.id = universityCardMediaId;
-            await transactionalEntityManager.save(profile);
+        if (media?.mediaType && media?.id) {
+          if (media.mediaType === MEDIA_TYPE?.UNIVERSITY_CARD) {
+            const universityCard = new Media();
+            universityCard.id = media.id;
+            universityCard.mediaType = media.mediaType;
+            universityCard.path = media.path;
+            universityCard.type = media.type;
+            universityCard.universityCard = profile;
+            await transactionalEntityManager.save(universityCard);
           }
         }
-
         const newUser = new User();
         newUser.email = email;
         newUser.password = hashedPassword;
@@ -204,7 +180,7 @@ const AuthService = {
     };
   },
 
-  me: async (req: AuthenticatedRequest, res: Response) => {
+  me: async (req: AuthenticatedRequest) => {
     try {
       if (req?.user) {
         const user = await AppDataSource.getRepository(User)
@@ -213,10 +189,8 @@ const AuthService = {
           .addSelect([
             "profile.fullname",
             "profile.universityId",
-            "profile.universityCard",
             "profile.status",
             "profile.role",
-            "profile.profileId",
           ])
           .leftJoin("profile.universityCard", "universityCard")
           .addSelect([

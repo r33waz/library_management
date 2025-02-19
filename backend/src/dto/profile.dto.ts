@@ -1,9 +1,9 @@
 import {
   IsDate,
   IsEnum,
-  IsInt,
   IsNotEmpty,
   IsOptional,
+  IsString,
   IsUUID,
 } from "class-validator";
 import { ROLES, SignupStatus } from "../constant/enum";
@@ -17,8 +17,8 @@ class ProfileDto {
   fullname: string;
 
   @IsOptional()
-  @IsInt()
-  universityId: number;
+  @IsString()
+  universityId: string;
 
   @IsOptional()
   universityCard: string;

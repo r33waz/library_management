@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { JwtPayloadWithId } from "../interface/auth.Interface";
 interface TokenOptions {
   expiresIn?: string;
 }
@@ -27,9 +28,13 @@ export const genRefreshToken = (payload: Object) => {
   return token;
 };
 
-export const verifyToken = (token: string, secret: string | undefined) => {
+export const verifyToken = (
+  token: string,
+  secret: string | undefined
+): JwtPayloadWithId => {
   if (!secret) {
     throw new Error("SECRET_KEY is not defined in the environment");
   }
-  return jwt.verify(token, secret);
+
+  return jwt.verify(token, secret) as JwtPayloadWithId; // Type assertion here
 };

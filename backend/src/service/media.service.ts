@@ -1,39 +1,51 @@
+import AppDataSource from "../config/db.config";
+import { STATUS_CODE } from "../constant/enum";
+import Media from "../entitys/media.entity";
 import { uploadResult } from "../middleware/multer";
 
 const MediaService = {
-  // Single file upload
-  uploadMedia: async (file: any) => {
-    if (!file) {
-      throw new Error("No file uploaded.");
+  uploadMedia: async (files: any | any[], mediaType?: string) => {
+    console.log("🚀 ~ uploadMedia: ~ mediaType:", mediaType);
+    if (!files || (Array.isArray(files) && files.length === 0)) {
+      throw new Error("No file(s) uploaded.");
     }
 
     try {
-      // Upload file to Cloudinary
-      const uploadedData = await uploadResult(file);
-      return uploadedData; // Return upload data (URL, type, etc.)
+      // Upload files to Cloudinary (or storage)
+      const uploadedFiles = Array.isArray(files)
+        ? await Promise.all(files.map((file) => uploadResult(file)))
+        : [await uploadResult(files)];
+
+      // Save media in the database
+      const mediaRecords = await AppDataSource.transaction(
+        async (transactionalEntityManager) => {
+          return Promise.all(
+            uploadedFiles.map(async (file) => {
+              const media = new Media();
+              media.path = file?.url;
+              media.name = file?.name;
+              media.type = file?.type;
+              media.mediaType = mediaType ? mediaType : "";
+              await transactionalEntityManager.save(media);
+              return {
+                id: media.id,
+                path: media.path,
+                mediaType,
+                type: media.type,
+              };
+            })
+          );
+        }
+      );
+      console.log("🚀 ~ uploadMedia: ~ mediaRecords:", mediaRecords);
+
+      return {
+        statusCode: STATUS_CODE.CREATED,
+        data: mediaRecords,
+      };
     } catch (error) {
       console.error("Error in media upload:", error);
-      throw new Error("Error uploading file to Cloudinary.");
-    }
-  },
-
-  // Multiple file upload
-  uploadMultipleMedia: async (files: any[]) => {
-    if (!files || files.length === 0) {
-      throw new Error("No files to upload.");
-    }
-
-    try {
-      // Process each file and upload to Cloudinary
-      const uploadPromises = files.map((file) => uploadResult(file));
-
-      // Wait for all uploads to finish
-      const uploadedFiles = await Promise.all(uploadPromises);
-
-      return uploadedFiles; // Return uploaded file data
-    } catch (error) {
-      console.error("Error in multiple media upload:", error);
-      throw new Error("Error uploading multiple files.");
+      throw new Error("Error uploading file(s) to Cloudinary.");
     }
   },
 };

@@ -1,3 +1,5 @@
+import { Request } from "express";
+
 export interface ISignup {
   fullname: string;
   email: string;
@@ -11,4 +13,14 @@ export interface ISignup {
 export interface ILogin {
   email: string;
   password: string;
+}
+
+export interface JwtPayloadWithId {
+  id: string;
+  email: string;
+  role: string;
+}
+
+export interface AuthenticatedRequest extends Request {
+  user: JwtPayloadWithId;
 }

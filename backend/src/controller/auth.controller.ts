@@ -65,7 +65,7 @@ const AuthController = {
 
   // Get User Info handler
   me: async (req: Request, res: Response): Promise<void> => {
-    const result = await authService.me(req, res);
+    const result = await authService.me(req);
     res.status(result?.status || 200).json({
       status: result?.status,
       data: result?.data,

@@ -1,15 +1,20 @@
 import { Request, Response } from "express";
-import mediaService from "../service/media.service";
+import MediaService from "../service/media.service";
 
 const MediaController = {
   uploadMedia: async (req: Request, resp: Response) => {
     try {
-      const result = await mediaService.uploadMedia(req, resp);
+      const result = await MediaService.uploadMedia(
+        req.files,
+        req.body.mediaType
+      );
+      console.log("🚀 ~ uploadMedia: ~ result:", result.data);
       resp.status(result.statusCode).json({
         status: result.statusCode,
-        message: result?.statusMessage,
-      }); /
+        data: result.data,
+      });
     } catch (error) {
+      console.log("🚀 ~ uploadMedia: ~ error:", error);
       resp.status(500).json({
         status: 500,
         message: "Error occurred during file upload",

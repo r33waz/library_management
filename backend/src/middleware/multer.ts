@@ -50,6 +50,7 @@ const uploadResult = async (file: Express.Multer.File) => {
       use_filename: true,
       unique_filename: false,
     });
+    console.log("🚀 ~ uploadResult ~ uploadResult:", uploadResult);
 
     fs.unlink(file.path, (err) => {
       if (err) console.error("Error deleting file:", err);
@@ -59,7 +60,7 @@ const uploadResult = async (file: Express.Multer.File) => {
       url: uploadResult.secure_url, // URL of the uploaded file
       type: uploadResult.format, // MIME type (e.g., jpg, mp4, etc.)
       name: uploadResult.original_filename, // Original file name
-      mimeType: uploadResult.mimeType,
+      mimeType: uploadResult.mimeTyspe,
       public_id: uploadResult.public_id,
     };
   } catch (error) {
