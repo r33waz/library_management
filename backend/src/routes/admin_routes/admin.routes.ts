@@ -4,6 +4,9 @@ import AdminController from "../../controller/admin.controller/admin.controller"
 import { authorizeUser } from "../../middleware/auth.middleware";
 const router = express.Router();
 
-router.get("/admin/all-users", AdminController?.getAlluser);
-router.use(authorizeUser([ROLES.ADMIN, ROLES.SUDO_ADMIN]));
+router.get(
+  "/admin/all-users",
+  authorizeUser([ROLES.ADMIN, ROLES.SUDO_ADMIN]),
+  AdminController?.getAlluser
+);
 export default router;
